@@ -1,0 +1,193 @@
+aid: chargy
+url: https://raw.githubusercontent.com/api-evangelist/chargy/refs/heads/main/apis.yml
+name: char.gy
+kind: company
+description: >-
+  char.gy is a British public electric-vehicle charge point operator that
+  specialises in on-street charging for the roughly forty percent of UK
+  households with no off-street parking, and it is best known for putting the
+  charger inside the lamp post. Founded by Richard Stobart out of the digital
+  agency Unboxed, it installed its first public charger in Marlow,
+  Buckinghamshire in 2018, is now led by CEO John Lewis from Floor 5, 55 King
+  William St, London EC4R 9AD, and is backed with £100m by Zouk Capital through
+  the UK Government-backed Charging Infrastructure Investment Fund. Its own
+  about page claims over 5,000 charge points and 28.3 million kg of CO2 saved,
+  and its live open data feed returned an x-total-count of 5,409 locations on
+  2026-07-27. In the UK energy value chain it sits at the very end of the wire:
+  it is not a licensed supplier, not a network operator and not a metering
+  agent, it operates charge points on street furniture owned by local
+  authorities — Haringey, Southwark, Brent, Barnet, Harrow, Coventry, Brighton
+  and Hove, Richmond and Wandsworth, Enfield and others — authorising drivers,
+  metering the session and pricing it. Britain has no consumer data-portability
+  mandate for energy equivalent to Australia's Consumer Data Right, so nothing
+  compels char.gy to expose an individual driver's usage or billing data through
+  an API, and it does not: there is no consumer API, no OAuth server, no
+  OpenID Connect discovery document and no accredited-recipient scheme anywhere
+  on the domain. What Britain DID mandate here is open infrastructure data. The
+  Public Charge Point Regulations 2023 (SI 2023/1168), Part 4 regulation 10(5),
+  require every charge point operator to make reference data and availability
+  data available to the public free of charge, in a machine readable format,
+  and — the crucial clause — "without any requirement to agree to terms and
+  conditions regarding the use of that data". char.gy complies, and the
+  compliance is real rather than claimed: it publishes an OCPI-shaped Locations
+  feed and an OCPI-shaped Tariffs feed at https://char.gy/open-ocpi/locations
+  and https://char.gy/open-ocpi/tariffs, both of which returned HTTP 200 with
+  application/json to a completely anonymous GET on 2026-07-27, paginated with
+  x-total-count, x-limit and RFC 5988 Link rel="next" headers, carrying real
+  GB*CGY*E*NNNNN EVSE identifiers, IEC 62196 Type 2 connectors, per-connector
+  tariff_ids and time-of-day restricted pence-per-kWh price components. The
+  posture is therefore the clean split this sector keeps producing, but rotated:
+  market and infrastructure data wide open and genuinely ungated because a
+  regulation forbids gating it, consumer data entirely absent because no
+  regulation asks for it, and the commercial OCPI CPO roaming interface at
+  /ocpi/cpo/ closed behind OCPI Token authorization for partner e-mobility
+  service providers. There is no developer portal — the entire public
+  documentation for the open API is a single Freshdesk help-centre article.
+image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/icons/chargy.png
+tags:
+- Energy
+- United Kingdom
+- EV Charging
+- Electricity
+- Utilities
+- OCPI
+- Charge Point Operator
+- Open Data
+- Roaming
+- Tariffs
+- Mobility
+- Electrification
+created: '2026-07-27'
+modified: '2026-07-27'
+specificationVersion: '0.19'
+apis:
+- aid: chargy:chargy-open-charge-point-data-api
+  name: char.gy Open Charge Point Data API
+  description: >-
+    char.gy's statutory open data feed, published to satisfy Part 4 regulation
+    10 of the UK Public Charge Point Regulations 2023, which requires reference
+    data and availability data to be made available to the public free of
+    charge, in a machine readable format, and without any requirement to agree
+    to terms and conditions. It is shaped as an Open Charge Point Interface
+    (OCPI) surface with exactly two modules exposed, both read-only GET and both
+    completely unauthenticated. GET /open-ocpi/locations returned HTTP 200 and
+    application/json to an anonymous request on 2026-07-27 with the OCPI
+    envelope {data, status_code: 1000, status_message: "Success", timestamp},
+    an x-total-count of 5409 locations, a default x-limit of 50, and an RFC 5988
+    Link header advertising rel="next" — pagination is limit/offset via query
+    string and was confirmed working at limit=2 and across offsets 0 to 550.
+    Each location carries country_code GB, party_id CGY, a UUID id,
+    parking_type (ON_STREET dominates, PARKING_LOT observed), publish, name,
+    address, city, postal_code, country GBR, coordinates, an evses array, an
+    operator block, an owner block naming the local authority, time_zone
+    Europe/London, opening_times and last_updated. Every EVSE carries a uid, an
+    evse_id of the form GB*CGY*E*00022, a status, capabilities
+    (REMOTE_START_STOP_CAPABLE, UNLOCK_CAPABLE), a physical_reference and
+    connectors describing IEC_62196_T2 sockets at AC_1_PHASE 230V/22A with
+    tariff_ids and a terms_and_conditions link. GET /open-ocpi/tariffs returned
+    HTTP 200 with 3 tariff objects carrying currency, elements and
+    price_components of type ENERGY, including a real time-of-day tariff with
+    weekday off-peak, weekday peak and weekend restrictions. No /open-ocpi
+    /versions endpoint is served (404), so no OCPI version is declared, and the
+    sessions, cdrs, tokens, commands and credentials modules are all 404 under
+    /open-ocpi — only the two modules the regulation compels are open.
+  humanURL: https://help.char.gy/support/solutions/articles/77000576948-public-charge-point-regulations-2023
+  baseURL: https://char.gy/open-ocpi
+  tags:
+  - Open Data
+  - EV Charging
+  - OCPI
+  - Locations
+  - Tariffs
+  - Charge Point Operator
+  - United Kingdom
+  properties:
+  - type: Documentation
+    url: https://help.char.gy/support/solutions/articles/77000576948-public-charge-point-regulations-2023
+  - type: Specification
+    url: https://github.com/ocpi/ocpi
+  - type: Legal
+    url: https://www.legislation.gov.uk/uksi/2023/1168/regulation/10/made
+  - type: TermsOfService
+    url: https://char.gy/us/terms-of-use
+  - type: Support
+    url: https://help.char.gy/
+- aid: chargy:chargy-ocpi-cpo-api
+  name: char.gy OCPI CPO Roaming API
+  description: >-
+    char.gy's commercial Open Charge Point Interface implementation in the
+    Charge Point Operator role, used so that another network's drivers can
+    authorise, charge and be settled on char.gy infrastructure. char.gy
+    publishes no documentation for it at all — its existence was established by
+    two independent signals. First, https://char.gy/robots.txt explicitly
+    disallows /ocpi/, /api/, /webhooks/, /account/ and /users/. Second,
+    anonymous probes on 2026-07-27 returned HTTP 401 with the response header
+    `www-authenticate: Token realm="OCPI"` and the body
+    {"error":"HTTP Token: Access denied."} on GET /ocpi/cpo/versions,
+    /ocpi/cpo/2.1.1/locations, /ocpi/cpo/2.2.1/locations, /ocpi/cpo/2.2.1
+    /tariffs, /ocpi/cpo/2.2.1/sessions, /ocpi/cpo/2.2.1/cdrs and
+    /ocpi/cpo/2.2.1/credentials, while control paths /ocpi/, /ocpi/cpo/
+    nonsense-xyz and /ocpi/xyz/versions returned 404 from the same host in the
+    same sweep — so the 401s are real routes, not a blanket wall. Version
+    support is directly observable: /ocpi/cpo/2.2/credentials returned HTTP 200
+    with the OCPI error envelope {"status_code":3002,"status_message":
+    "Unsupported version"}, whereas the 2.2.1 and 2.1.1 paths returned 401,
+    which means char.gy speaks OCPI 2.2.1 and 2.1.1 in the CPO role and
+    explicitly rejects 2.2. No eMSP-role surface was found (/ocpi/emsp/versions
+    → 404). Access is partner-only: an OCPI credentials handshake following a
+    commercial roaming agreement. There is no signup, no sandbox, no published
+    price and no developer registration — the only published contact route
+    anywhere near the API surface is support@char.gy.
+  humanURL: https://char.gy/us/partners
+  baseURL: https://char.gy/ocpi/cpo
+  tags:
+  - EV Charging
+  - OCPI
+  - Roaming
+  - Charge Point Operator
+  - Sessions
+  - CDRs
+  - United Kingdom
+  properties:
+  - type: Specification
+    url: https://github.com/ocpi/ocpi
+  - type: Partners
+    url: https://char.gy/us/partners
+  - type: Support
+    url: https://help.char.gy/
+  - type: TermsOfService
+    url: https://char.gy/us/terms-of-use
+common:
+- type: Website
+  url: https://char.gy/
+- type: Documentation
+  url: https://help.char.gy/support/solutions/articles/77000576948-public-charge-point-regulations-2023
+- type: About
+  url: https://char.gy/us/about
+- type: Products
+  url: https://char.gy/us/our-products-ev-charging
+- type: Partners
+  url: https://char.gy/us/partners
+- type: Drivers
+  url: https://char.gy/us/drivers
+- type: Pricing
+  url: https://char.gy/us/pricing
+- type: Blog
+  url: https://char.gy/us/news
+- type: Support
+  url: https://help.char.gy/
+- type: Contact
+  url: https://char.gy/us/contact-us
+- type: Privacy
+  url: https://char.gy/us/privacy-notice
+- type: TermsOfService
+  url: https://char.gy/us/terms-of-use
+- type: LinkedIn
+  url: https://www.linkedin.com/company/char.gy
+- type: Application
+  url: https://apps.apple.com/app/1636840750
+- type: Application
+  url: https://play.google.com/store/apps/details?id=com.chargy_limited.driverapp
+maintainers:
+- FN: Kin Lane
+  email: kin@apievangelist.com
