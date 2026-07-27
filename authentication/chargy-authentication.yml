@@ -1,0 +1,67 @@
+generated: '2026-07-27'
+method: probed
+source: >-
+  Live anonymous HTTP probes of https://char.gy/open-ocpi/* and
+  https://char.gy/ocpi/cpo/*, 2026-07-27; char.gy help-centre article
+  77000576948
+docs: https://help.char.gy/support/solutions/articles/77000576948-public-charge-point-regulations-2023
+summary:
+  types: [none, http]
+  api_key_in: []
+  oauth2_flows: []
+  note: >-
+    char.gy operates two authentication postures on one host. The statutory open
+    data feed has NO authentication of any kind, by design and by law —
+    regulation 10(5) of the Public Charge Point Regulations 2023 forbids
+    requiring agreement to terms and conditions for access to that data, and no
+    credential, cookie or referer was needed to receive HTTP 200. The commercial
+    OCPI CPO roaming interface requires an OCPI Token credential issued through
+    a partner credentials handshake. There is no OAuth 2.0 server, no OpenID
+    Connect discovery document, no API-key self-service and no developer
+    registration anywhere on the domain — all five /.well-known/ discovery
+    probes returned 404.
+schemes:
+  - name: none
+    type: none
+    applies_to: chargy:chargy-open-charge-point-data-api
+    surface: https://char.gy/open-ocpi
+    sources: [openapi/chargy-open-charge-point-data-openapi.yml]
+    evidence: >-
+      GET https://char.gy/open-ocpi/locations?limit=2 returned HTTP 200 with
+      application/json and status_code 1000 to a request carrying no
+      Authorization header, no cookie and no referer on 2026-07-27. The OpenAPI
+      records this as an explicit empty `security: []` at both the document and
+      operation level.
+    self_service: not-applicable
+  - name: OCPI Token
+    type: http
+    scheme: Token
+    in: header
+    parameter_name: Authorization
+    applies_to: chargy:chargy-ocpi-cpo-api
+    surface: https://char.gy/ocpi/cpo
+    realm: OCPI
+    sources: [probe]
+    evidence: >-
+      GET https://char.gy/ocpi/cpo/versions and
+      GET https://char.gy/ocpi/cpo/2.2.1/locations both returned HTTP 401 with
+      the response header `www-authenticate: Token realm="OCPI"` and the body
+      {"error":"HTTP Token: Access denied."} on 2026-07-27. This is the OCPI
+      credentials-module token scheme (`Authorization: Token <credential>`),
+      not OAuth 2.0.
+    credential_issuance: >-
+      Partner-only. Credentials are exchanged through the OCPI credentials
+      handshake following a commercial roaming agreement; the only published
+      contact route is support@char.gy via https://char.gy/us/partners.
+    self_service: false
+    documented: false
+absent:
+  - oauth2: no authorization server; /.well-known/oauth-authorization-server 404
+  - openIdConnect: /.well-known/openid-configuration 404
+  - apiKey: no self-service API key issuance published anywhere on the domain
+  - mutualTLS: not observed
+consumer_data_access: >-
+  There is no authenticated consumer-facing API. No surface exposes an
+  individual driver's charging sessions, usage or billing data to that driver or
+  to a party acting on their behalf, because the United Kingdom has no energy
+  data-portability mandate equivalent to Australia's Consumer Data Right.

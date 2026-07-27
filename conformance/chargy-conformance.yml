@@ -1,0 +1,102 @@
+generated: '2026-07-27'
+method: probed
+source: >-
+  Live payload and header inspection of https://char.gy/open-ocpi/* and
+  https://char.gy/ocpi/cpo/*, plus
+  https://www.legislation.gov.uk/uksi/2023/1168/regulation/10/made and
+  https://raw.githubusercontent.com/ocpi/ocpi/release-2.2.1-bugfixes/mod_locations.asciidoc,
+  2026-07-27
+standards:
+  - id: pcpr-2023-part-4
+    name: >-
+      Public Charge Point Regulations 2023 (SI 2023/1168), Part 4, regulation 10
+      — open public charge point data
+    conforms: true
+    evidence: >-
+      Reference data and availability data are published free of charge, in a
+      machine readable format, and — the operative clause of regulation 10(5) —
+      without any requirement to agree to terms and conditions: an anonymous GET
+      with no account, token, cookie or referer returned HTTP 200 and
+      application/json on 2026-07-27. Every element enumerated by regulation
+      10(6)(d) is present in the payload: location, connector type
+      (IEC_62196_T2), price in pence per kWh (via tariff_ids into /tariffs), and
+      hours of availability (opening_times). Availability data per 10(6)(a) is
+      carried on the EVSE status field.
+    published_claim: https://help.char.gy/support/solutions/articles/77000576948-public-charge-point-regulations-2023
+  - id: ocpi-2.2.1
+    name: Open Charge Point Interface 2.2.1
+    conforms: partial
+    evidence: >-
+      The open feed is OCPI-SHAPED, not OCPI-conformant: it carries the OCPI
+      response envelope (data / status_code 1000 / status_message / timestamp),
+      OCPI Location, EVSE, Connector and Tariff object shapes, OCPI paging
+      (limit/offset with x-total-count, x-limit and a Link rel="next" header)
+      and the OCPI date_from/date_to filters, but it serves no
+      /open-ocpi/versions endpoint so no version is negotiable or declared, and
+      it exposes only the locations and tariffs modules. The commercial CPO
+      surface at /ocpi/cpo/2.2.1/ is separately real and credential-gated.
+    divergence: >-
+      EVSE status values observed are WORKING (245/250 sampled) and FAULTED
+      (5/250). Neither is in the OCPI 2.2.1 EVSEStatus enumeration, which lists
+      AVAILABLE, BLOCKED, CHARGING, INOPERATIVE, OUTOFORDER, PLANNED, REMOVED,
+      RESERVED and UNKNOWN. char.gy appears to have encoded the regulator's
+      "working" vocabulary from regulation 10(6)(a) inside an OCPI envelope —
+      the law reshaping the standard's payload.
+  - id: ocpi-2.1.1
+    name: Open Charge Point Interface 2.1.1
+    conforms: true
+    scope: commercial CPO roaming surface only
+    evidence: >-
+      /ocpi/cpo/2.1.1/locations returns HTTP 401 with
+      www-authenticate: Token realm="OCPI" — a real credential-gated route,
+      distinguishable from the 404 returned by nonsense paths on the same host
+      in the same sweep.
+  - id: ocpi-credentials-token-auth
+    name: OCPI credentials module token authorization
+    conforms: true
+    scope: commercial CPO roaming surface only
+    evidence: 'Authorization: Token scheme advertised via www-authenticate: Token realm="OCPI"'
+  - id: iec-62196-2
+    name: IEC 62196 Type 2 connector classification
+    conforms: true
+    evidence: Every connector observed declares standard IEC_62196_T2, format SOCKET, power_type AC_1_PHASE at 230V/22A
+  - id: emi3-evse-id
+    name: eMI3 EVSE identifier format
+    conforms: true
+    evidence: Every EVSE carries an evse_id of the form GB*CGY*E*00022 under the GB*CGY operator prefix
+  - id: rfc5988-web-linking
+    name: RFC 5988 / RFC 8288 Link header pagination
+    conforms: true
+    evidence: 'link: <https://char.gy/open-ocpi/locations?limit=2&offset=2>; rel="next"'
+  - id: rfc9457-problem-details
+    conforms: false
+    evidence: >-
+      Errors use OCPI status codes inside an HTTP 200 body, and routing errors
+      use {"error":"..."}; no application/problem+json anywhere.
+  - id: oauth2
+    conforms: false
+    evidence: /.well-known/oauth-authorization-server 404; no authorization server exists
+  - id: openid-connect
+    conforms: false
+    evidence: /.well-known/openid-configuration 404
+  - id: rfc9116-security-txt
+    conforms: false
+    evidence: /.well-known/security.txt 404
+  - id: rfc9727-api-catalog
+    conforms: false
+    evidence: /.well-known/api-catalog 404
+  - id: cdr-energy
+    name: Australian Consumer Data Right (energy)
+    conforms: not-applicable
+    evidence: char.gy operates only in the United Kingdom and Republic of Ireland; Britain has no equivalent energy data-portability mandate
+compliance_program:
+  published: true
+  kind: statutory
+  url: https://help.char.gy/support/solutions/articles/77000576948-public-charge-point-regulations-2023
+  detail: >-
+    char.gy publishes an explicit compliance statement — "Char.gy complies with
+    the Public Charge Point Regulations 2023 by making the necessary open data
+    available via OCPI" — and the statement is independently verifiable against
+    the live endpoints. No security-certification programme (SOC 2, ISO 27001,
+    PCI DSS) is published anywhere on the domain; trust.char.gy does not resolve
+    and /security returns 404.

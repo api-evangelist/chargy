@@ -1,0 +1,78 @@
+generated: '2026-07-27'
+method: probed
+source: >-
+  Error responses observed live on https://char.gy/open-ocpi/* and
+  https://char.gy/ocpi/cpo/*, 2026-07-27
+format: ocpi-status-code
+envelope:
+  shape: '{status_code, status_message, timestamp}'
+  field: status_code
+  note: >-
+    Not RFC 9457. char.gy returns OCPI status codes inside an HTTP 200 body for
+    application-level errors on the open feed; routing and authorization
+    failures use a separate, non-OCPI Rails-style body {"error": "..."} with a
+    real 4xx status line. Both shapes are recorded below because a consumer will
+    meet both.
+codes:
+  - code: 1000
+    http_status: 200
+    title: Success
+    class: success
+    observed: true
+    source_operation: openapi/chargy-open-charge-point-data-openapi.yml#listLocations
+  - code: 2001
+    http_status: 200
+    title: Invalid or missing parameters
+    class: client-error
+    observed: true
+    observed_messages:
+      - Limit is not a number
+      - Date from is not a valid timestamp
+    remediation: >-
+      Send limit and offset as integers and date_from/date_to as ISO 8601
+      timestamps. Note the HTTP status is 200 — clients must inspect
+      status_code, not the status line, to detect this failure.
+    source_operation: openapi/chargy-open-charge-point-data-openapi.yml#listLocations
+  - code: 3002
+    http_status: 200
+    title: Unsupported version
+    class: server-error
+    observed: true
+    observed_on: GET https://char.gy/ocpi/cpo/2.2/credentials
+    remediation: >-
+      Use OCPI 2.2.1 or 2.1.1 on the commercial CPO surface; 2.2 is explicitly
+      rejected.
+http_errors:
+  - status: 401
+    body: '{"error":"HTTP Token: Access denied."}'
+    headers:
+      www-authenticate: Token realm="OCPI"
+    observed_on:
+      - GET /ocpi/cpo/versions
+      - GET /ocpi/cpo/2.2.1/locations
+      - GET /ocpi/cpo/2.1.1/locations
+    meaning: Missing or invalid OCPI Token credential on the commercial roaming surface.
+    remediation: Obtain credentials through an OCPI credentials handshake — partner-only.
+  - status: 404
+    body: '{"error":"Not Found"}'
+    observed_on:
+      - GET /open-ocpi/versions
+      - GET /open-ocpi/sessions
+      - GET /open-ocpi/cdrs
+      - GET /open-ocpi/locations/{id}
+      - GET /open-ocpi/tariffs/{id}
+      - GET /ocpi/emsp/versions
+      - OPTIONS /open-ocpi/locations
+      - POST /open-ocpi/locations
+    meaning: >-
+      Unrouted path or method. Only the two collection GETs the regulation
+      compels are routed on the open feed — there are no per-object reads and no
+      non-GET methods.
+gaps:
+  - >-
+    char.gy publishes no error reference at all; every code above was recovered
+    by probing. Consumers cannot discover the 2001-inside-200 behaviour from any
+    document.
+  - >-
+    No RFC 9457 problem+json, no error type URIs, no machine-readable error
+    catalogue.

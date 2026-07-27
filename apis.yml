@@ -104,6 +104,26 @@ apis:
   properties:
   - type: Documentation
     url: https://help.char.gy/support/solutions/articles/77000576948-public-charge-point-regulations-2023
+  - type: OpenAPI
+    url: openapi/chargy-open-charge-point-data-openapi.yml
+  - type: Overlay
+    url: overlays/chargy-open-charge-point-data-overlay.yaml
+  - type: Examples
+    url: examples/chargy-locations-response.json
+  - type: Examples
+    url: examples/chargy-tariffs-response.json
+  - type: Conventions
+    url: conventions/chargy-conventions.yml
+  - type: ErrorCatalog
+    url: errors/chargy-error-codes.yml
+  - type: DataModel
+    url: data-model/chargy-data-model.yml
+  - type: MCPServer
+    url: mcp/chargy-mcp.yml
+  - type: ToolCrosswalk
+    url: mcp/chargy-tool-crosswalk.yml
+  - type: AgentSkill
+    url: skills/_index.yml
   - type: Specification
     url: https://github.com/ocpi/ocpi
   - type: Legal
@@ -149,6 +169,10 @@ apis:
   - CDRs
   - United Kingdom
   properties:
+  - type: Authentication
+    url: authentication/chargy-authentication.yml
+  - type: ErrorCatalog
+    url: errors/chargy-error-codes.yml
   - type: Specification
     url: https://github.com/ocpi/ocpi
   - type: Partners
@@ -158,6 +182,26 @@ apis:
   - type: TermsOfService
     url: https://char.gy/us/terms-of-use
 common:
+- type: AgenticAccess
+  url: agentic-access/chargy-agentic-access.yml
+- type: DomainSecurity
+  url: security/chargy-domain-security.yml
+- type: Authentication
+  url: authentication/chargy-authentication.yml
+- type: Conventions
+  url: conventions/chargy-conventions.yml
+- type: Conformance
+  url: conformance/chargy-conformance.yml
+- type: Compliance
+  url: https://help.char.gy/support/solutions/articles/77000576948-public-charge-point-regulations-2023
+- type: Lifecycle
+  url: lifecycle/chargy-lifecycle.yml
+- type: DataModel
+  url: data-model/chargy-data-model.yml
+- type: LLMsTxt
+  url: llms/chargy-llms.txt
+- type: AgentSkill
+  url: skills/_index.yml
 - type: Website
   url: https://char.gy/
 - type: Documentation
@@ -178,10 +222,16 @@ common:
   url: https://help.char.gy/
 - type: Contact
   url: https://char.gy/us/contact-us
-- type: Privacy
+- type: PrivacyPolicy
   url: https://char.gy/us/privacy-notice
 - type: TermsOfService
   url: https://char.gy/us/terms-of-use
+- type: SignUp
+  url: https://char.gy/users/payg_registrations/new
+- type: Login
+  url: https://char.gy/users/sign_in
+- type: GitHubOrganization
+  url: https://github.com/char-gy
 - type: LinkedIn
   url: https://www.linkedin.com/company/char.gy
 - type: Application

@@ -1,0 +1,49 @@
+generated: '2026-07-27'
+method: derived
+status: candidate
+source: openapi/chargy-open-charge-point-data-openapi.yml
+description: >-
+  char.gy operates NO Model Context Protocol server. mcp.char.gy does not
+  resolve, https://char.gy/mcp returns 404, and a search of the public MCP
+  registry (registry.modelcontextprotocol.io) for "char.gy" returned zero
+  servers on 2026-07-27. The tool list below is a CANDIDATE derived by API
+  Evangelist from the two real operations of the open data feed — it describes
+  what an MCP server over this API would expose, and each tool inherits its
+  input schema from the backing OpenAPI operation. It is not a char.gy product
+  and must not be read as one.
+server:
+  name: chargy
+  transport: http
+  url: null
+  auth: none
+  note: >-
+    An MCP server over this API needs no credential handling at all — the
+    backing surface is anonymous by statute. That makes it one of the cheapest
+    agent-readable energy datasets in the United Kingdom to wrap.
+tools:
+  - name: list_charge_point_locations
+    description: >-
+      List char.gy public charge point locations with their EVSEs, connectors
+      and tariff references. Supports limit/offset paging and date_from/date_to
+      filtering on last_updated.
+    source_operation: openapi/chargy-open-charge-point-data-openapi.yml#listLocations
+    input_schema_source: operation parameters limit, offset, date_from, date_to
+    read_only: true
+  - name: list_charging_tariffs
+    description: >-
+      List char.gy published tariffs, including time-of-day restricted energy
+      price components, so a connector's tariff_ids can be resolved to a price
+      per kWh.
+    source_operation: openapi/chargy-open-charge-point-data-openapi.yml#listTariffs
+    input_schema_source: operation parameters limit, offset, date_from, date_to
+    read_only: true
+not_derivable:
+  - >-
+    No search, geographic or availability tool can be derived — the API has no
+    spatial, city, postcode or status filter. An agent answering "is there a
+    working char.gy charger near me" must crawl all 5,409 locations and filter
+    client-side, which is a genuine agent-readiness limitation of the surface,
+    not of the wrapper.
+  - >-
+    No session, CDR, token or command tools exist on any public surface. Those
+    OCPI modules live behind the credential-gated /ocpi/cpo/ roaming interface.

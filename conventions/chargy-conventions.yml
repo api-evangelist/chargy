@@ -1,0 +1,106 @@
+generated: '2026-07-27'
+method: probed
+source: >-
+  Response headers and bodies observed on live anonymous requests to
+  https://char.gy/open-ocpi/locations and /open-ocpi/tariffs, 2026-07-27
+scope: chargy:chargy-open-charge-point-data-api
+authentication:
+  style: none
+  detail: >-
+    No credential of any kind. See authentication/chargy-authentication.yml for
+    the commercial CPO surface, which uses `Authorization: Token` under
+    realm "OCPI".
+envelope:
+  style: ocpi
+  shape: '{data, status_code, status_message, timestamp}'
+  success_status_code: 1000
+  detail: >-
+    Every response — success and client error alike — is HTTP 200 carrying an
+    OCPI envelope. Application-level failure is signalled inside the body via
+    status_code, not by the HTTP status line. See errors/chargy-error-codes.yml.
+pagination:
+  style: limit-offset
+  parameters:
+    limit:
+      default: 50
+      evidence: x-limit response header on an unparameterised request
+    offset:
+      default: 0
+  response_headers:
+    - name: x-total-count
+      description: Total matching objects before pagination (5409 for locations, 3 for tariffs)
+    - name: x-limit
+      description: Page size applied to the response
+    - name: link
+      description: >-
+        RFC 5988 Link header carrying rel="next"; absent on the last page.
+        Observed: <https://char.gy/open-ocpi/locations?limit=2&offset=2>; rel="next"
+  over_the_end: >-
+    An offset past the end returns HTTP 200 with an empty data array and
+    status_code 1000 — not a 404.
+filtering:
+  parameters:
+    - parameter: date_from
+      semantics: last_updated at or after the timestamp
+      verified: >-
+        date_from=2026-07-27T00:00:00Z reduced x-total-count from 5409 to 2396;
+        date_from=2027-01-01T00:00:00Z returned 0
+    - parameter: date_to
+      semantics: last_updated before the timestamp
+      verified: date_to=2026-07-01T00:00:00Z returned x-total-count 6
+  note: >-
+    These are the standard OCPI paging/filter parameters and both are genuinely
+    implemented, which the single help-centre article does not mention. They are
+    the only filters found — there is no bounding-box, postcode, city, status or
+    connector-type filter, so geographic selection requires a full crawl of all
+    5,409 locations.
+field_expansion:
+  supported: false
+  detail: >-
+    Locations are always returned fully expanded — evses and connectors are
+    embedded, there is no sparse-fieldset or expand parameter, and there is no
+    per-object endpoint (GET /open-ocpi/locations/{id} returns 404).
+idempotency:
+  supported: not-applicable
+  detail: >-
+    The published surface is read-only. Only GET and HEAD are routed; OPTIONS
+    and POST return 404. There is no write operation for an idempotency key to
+    protect, so no Idempotency pointer is wired in apis.yml.
+request_tracing:
+  header: x-request-id
+  emitted_on: every response
+  example: 48324f0b-2c70-4f8d-9d97-deb08a76770e
+  note: >-
+    x-runtime is also emitted (server-side duration in seconds), which together
+    with the header set identifies a Ruby on Rails application.
+caching:
+  etag: 'weak, e.g. W/"9f3f65d1b94a63d7de9e4eb800552b5c"'
+  cache_control: 'max-age=0, private, must-revalidate'
+  conditional_requests: ETag is emitted; If-None-Match handling not asserted
+versioning:
+  scheme: none-on-open-feed
+  detail: >-
+    The open feed declares no OCPI version — /open-ocpi/versions returns 404 —
+    so consumers must pin to the observed payload shape. The commercial CPO
+    surface DOES version-negotiate: /ocpi/cpo/2.2.1/* and /ocpi/cpo/2.1.1/*
+    return 401 (real routes), while /ocpi/cpo/2.2/credentials returns
+    status_code 3002 "Unsupported version". See lifecycle/chargy-lifecycle.yml.
+rate_limiting:
+  signalled: false
+  detail: >-
+    No x-ratelimit-*, no Retry-After and no 429 observed across a sweep that
+    included five 100-record pages plus repeated parameter probes. No published
+    rate limit exists; the absence of a documented limit is itself a risk for
+    consumers crawling all 5,409 locations.
+transport_security:
+  hsts: 'max-age=63072000; includeSubDomains'
+  tls: TLSv1.3
+  headers: >-
+    x-content-type-options nosniff, x-frame-options SAMEORIGIN,
+    referrer-policy strict-origin-when-cross-origin,
+    content-security-policy-report-only
+cross_links:
+  errors: errors/chargy-error-codes.yml
+  lifecycle: lifecycle/chargy-lifecycle.yml
+  authentication: authentication/chargy-authentication.yml
+  data_model: data-model/chargy-data-model.yml

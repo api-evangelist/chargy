@@ -1,0 +1,121 @@
+generated: '2026-07-27'
+method: derived
+source: openapi/chargy-open-charge-point-data-openapi.yml
+description: >-
+  Entity graph derived from the schemas of the char.gy Open Charge Point Data
+  API. The feed is a two-collection model with one cross-collection reference:
+  a connector points at a tariff by id, and that is the only join a consumer can
+  make. There are no per-object endpoints, so every entity is reachable only by
+  paging its parent collection.
+entities:
+  - name: Location
+    collection: /locations
+    identifier: id
+    id_format: uuid
+    count_observed: 5409
+    key_fields: [country_code, party_id, id, parking_type, publish, name, address, city, postal_code, country, coordinates, time_zone, opening_times, last_updated]
+    notes: >-
+      party_id is always CGY and country_code always GB. parking_type was
+      ON_STREET on every one of 250 sampled records — the lamp-post model.
+  - name: EVSE
+    embedded_in: Location
+    identifier: uid
+    business_identifier: evse_id
+    id_format: 'uuid (uid); eMI3 GB*CGY*E*NNNNN (evse_id)'
+    key_fields: [uid, evse_id, status, capabilities, connectors, physical_reference, last_updated]
+  - name: Connector
+    embedded_in: EVSE
+    identifier: id
+    id_format: 'ordinal string, e.g. "1"'
+    key_fields: [id, standard, format, power_type, max_voltage, max_amperage, tariff_ids, terms_and_conditions, last_updated]
+  - name: Tariff
+    collection: /tariffs
+    identifier: id
+    id_format: uuid
+    count_observed: 3
+    key_fields: [country_code, party_id, id, currency, elements, last_updated]
+  - name: TariffElement
+    embedded_in: Tariff
+    key_fields: [price_components, restrictions]
+  - name: PriceComponent
+    embedded_in: TariffElement
+    key_fields: [type, price, step_size]
+  - name: BusinessDetails
+    embedded_in: Location
+    roles: [operator, owner]
+    key_fields: [name, website]
+    notes: >-
+      operator is always char.gy. owner is the local authority that owns the
+      street furniture — Tower Hamlets, Southwark, Merton, Haringey and
+      Buckinghamshire County Council were observed — and is absent on roughly
+      40 percent of sampled records.
+relationships:
+  - from: Location
+    to: EVSE
+    type: has_many
+    via: evses
+    embedded: true
+  - from: EVSE
+    to: Connector
+    type: has_many
+    via: connectors
+    embedded: true
+  - from: Connector
+    to: Tariff
+    type: has_many
+    via: tariff_ids
+    embedded: false
+    join: connector.tariff_ids[] == tariff.id
+    note: >-
+      The only cross-collection join in the model, and the only route from a
+      charge point to its price. Consumers must fetch /tariffs separately and
+      index it by id.
+  - from: Location
+    to: BusinessDetails
+    type: has_one
+    via: operator
+    embedded: true
+  - from: Location
+    to: BusinessDetails
+    type: has_one
+    via: owner
+    embedded: true
+    optional: true
+  - from: Location
+    to: GeoLocation
+    type: has_one
+    via: coordinates
+    embedded: true
+  - from: Location
+    to: Hours
+    type: has_one
+    via: opening_times
+    embedded: true
+  - from: Tariff
+    to: TariffElement
+    type: has_many
+    via: elements
+    embedded: true
+  - from: TariffElement
+    to: PriceComponent
+    type: has_many
+    via: price_components
+    embedded: true
+  - from: TariffElement
+    to: TariffRestrictions
+    type: has_one
+    via: restrictions
+    embedded: true
+    optional: true
+    note: >-
+      Absence of restrictions means the price component applies at all times;
+      the GBP tariff uses three elements to express weekday off-peak, weekday
+      peak and weekend pricing.
+access_notes:
+  - No per-object read exists — GET /locations/{id} and /tariffs/{id} both 404.
+  - >-
+    No spatial, city, postcode or status filter exists, so any geographic query
+    requires paging all 5,409 locations and filtering client-side.
+  - >-
+    date_from / date_to on last_updated are the only server-side filters, which
+    makes incremental synchronisation practical even though targeted lookup is not.
