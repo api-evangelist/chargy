@@ -1,0 +1,327 @@
+{
+  "item": [
+    {
+      "id": "d3afd22d-3c79-41a6-8b4a-9553dfffca15",
+      "name": "Locations",
+      "description": {
+        "content": "Reference and availability data for char.gy charge points.",
+        "type": "text/plain"
+      },
+      "item": [
+        {
+          "id": "d4c8836f-c1d2-406c-8b91-6a69b74f15a2",
+          "name": "List charge point locations",
+          "request": {
+            "name": "List charge point locations",
+            "description": {
+              "content": "Returns the paginated list of char.gy charge point locations with their EVSEs and connectors. Observed anonymously with HTTP 200 and an `x-total-count` of 5409 on 2026-07-27. Every EVSE carries an `evse_id` of the form `GB*CGY*E*NNNNN`; every connector carries `tariff_ids` that resolve against `/tariffs`.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "locations"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "disabled": false,
+                  "key": "limit",
+                  "value": "50",
+                  "description": "Page size. Default 50 (observed via the `x-limit` response header on an unparameterised request). A non-numeric value returns status_code 2001."
+                },
+                {
+                  "disabled": false,
+                  "key": "offset",
+                  "value": "0",
+                  "description": "Zero-based record offset. An offset beyond the collection returns an empty `data` array with status_code 1000."
+                },
+                {
+                  "disabled": false,
+                  "key": "date_from",
+                  "value": "<dateTime>",
+                  "description": "Return only objects with `last_updated` at or after this timestamp. Verified functional — `date_from=2026-07-27T00:00:00Z` reduced `x-total-count` from 5409 to 2396. An unparseable value returns status_code 2001 \"Date from is not a valid timestamp\"."
+                },
+                {
+                  "disabled": false,
+                  "key": "date_to",
+                  "value": "<dateTime>",
+                  "description": "Return only objects with `last_updated` before this timestamp. Verified functional — `date_to=2026-07-01T00:00:00Z` returned an `x-total-count` of 6."
+                }
+              ],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "79766ba8-fc3a-45e5-aed5-d5c4323afca6",
+              "name": "OCPI envelope. `status_code` is 1000 on success; malformed parameters also return HTTP 200 but with a 2xxx client error status_code and no `data` member.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "locations"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "limit",
+                      "value": "50"
+                    },
+                    {
+                      "key": "offset",
+                      "value": "0"
+                    },
+                    {
+                      "key": "date_from",
+                      "value": "<dateTime>"
+                    },
+                    {
+                      "key": "date_to",
+                      "value": "<dateTime>"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Total number of objects matching the query, before pagination.",
+                  "key": "x-total-count",
+                  "value": "5409"
+                },
+                {
+                  "disabled": false,
+                  "description": "Page size applied to this response.",
+                  "key": "x-limit",
+                  "value": "50"
+                },
+                {
+                  "disabled": false,
+                  "description": "RFC 5988 pagination link; carries rel=\"next\" when more pages exist.",
+                  "key": "link",
+                  "value": "<https://char.gy/open-ocpi/locations?limit=2&offset=2>; rel=\"next\""
+                },
+                {
+                  "disabled": false,
+                  "description": "Per-request correlation id emitted on every response.",
+                  "key": "x-request-id",
+                  "value": "48324f0b-2c70-4f8d-9d97-deb08a76770e"
+                },
+                {
+                  "disabled": false,
+                  "description": "Weak validator; responses are sent with cache-control private, must-revalidate.",
+                  "key": "etag",
+                  "value": "string"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"summary\": \"Two locations (observed 2026-07-27, limit=2)\",\n  \"externalValue\": \"../examples/chargy-locations-response.json\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        }
+      ],
+      "event": []
+    },
+    {
+      "id": "6d95aba3-ba83-4a84-aa51-a24e49c16746",
+      "name": "Tariffs",
+      "description": {
+        "content": "Published price components for char.gy charging sessions.",
+        "type": "text/plain"
+      },
+      "item": [
+        {
+          "id": "6bf85f49-20c2-469c-b549-dba1cad865e8",
+          "name": "List charging tariffs",
+          "request": {
+            "name": "List charging tariffs",
+            "description": {
+              "content": "Returns the published tariff objects referenced by connector `tariff_ids` on `/locations`. Observed anonymously with HTTP 200 and an `x-total-count` of 3 on 2026-07-27, including a GBP time-of-day tariff with weekday off-peak, weekday peak and weekend restrictions.",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "tariffs"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "disabled": false,
+                  "key": "limit",
+                  "value": "50",
+                  "description": "Page size. Default 50 (observed via the `x-limit` response header on an unparameterised request). A non-numeric value returns status_code 2001."
+                },
+                {
+                  "disabled": false,
+                  "key": "offset",
+                  "value": "0",
+                  "description": "Zero-based record offset. An offset beyond the collection returns an empty `data` array with status_code 1000."
+                },
+                {
+                  "disabled": false,
+                  "key": "date_from",
+                  "value": "<dateTime>",
+                  "description": "Return only objects with `last_updated` at or after this timestamp. Verified functional — `date_from=2026-07-27T00:00:00Z` reduced `x-total-count` from 5409 to 2396. An unparseable value returns status_code 2001 \"Date from is not a valid timestamp\"."
+                },
+                {
+                  "disabled": false,
+                  "key": "date_to",
+                  "value": "<dateTime>",
+                  "description": "Return only objects with `last_updated` before this timestamp. Verified functional — `date_to=2026-07-01T00:00:00Z` returned an `x-total-count` of 6."
+                }
+              ],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "95a81fac-ae8e-46f4-9f56-4befa0cc2340",
+              "name": "OCPI envelope carrying tariff objects.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "tariffs"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "limit",
+                      "value": "50"
+                    },
+                    {
+                      "key": "offset",
+                      "value": "0"
+                    },
+                    {
+                      "key": "date_from",
+                      "value": "<dateTime>"
+                    },
+                    {
+                      "key": "date_to",
+                      "value": "<dateTime>"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Total number of objects matching the query, before pagination.",
+                  "key": "x-total-count",
+                  "value": "5409"
+                },
+                {
+                  "disabled": false,
+                  "description": "Page size applied to this response.",
+                  "key": "x-limit",
+                  "value": "50"
+                },
+                {
+                  "disabled": false,
+                  "description": "RFC 5988 pagination link; carries rel=\"next\" when more pages exist.",
+                  "key": "link",
+                  "value": "<https://char.gy/open-ocpi/locations?limit=2&offset=2>; rel=\"next\""
+                },
+                {
+                  "disabled": false,
+                  "description": "Per-request correlation id emitted on every response.",
+                  "key": "x-request-id",
+                  "value": "48324f0b-2c70-4f8d-9d97-deb08a76770e"
+                },
+                {
+                  "disabled": false,
+                  "description": "Weak validator; responses are sent with cache-control private, must-revalidate.",
+                  "key": "etag",
+                  "value": "string"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"summary\": \"All three tariffs (observed 2026-07-27)\",\n  \"externalValue\": \"../examples/chargy-tariffs-response.json\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        }
+      ],
+      "event": []
+    }
+  ],
+  "event": [],
+  "variable": [
+    {
+      "type": "string",
+      "value": "https://char.gy/open-ocpi",
+      "key": "baseUrl"
+    }
+  ],
+  "info": {
+    "_postman_id": "f142429f-b40f-4a03-af0d-2a2064383539",
+    "name": "char.gy Open Charge Point Data API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": {
+      "content": "char.gy publishes no OpenAPI of its own; its entire published documentation for this API is a single Freshdesk help-centre article naming the host and two paths. This description was GENERATED by API Evangelist from live, anonymous HTTP probes of the two published endpoints on 2026-07-27 — every path, query parameter, response header, status code and schema field below was observed in a real response, and nothing here was inferred from the OCPI specification alone.\n\nObserved behaviour: both endpoints answer HTTP 200 with `application/json` to a request carrying no credential, no cookie and no referer. Responses use the OCPI envelope `{data, status_code, status_message, timestamp}` with `status_code: 1000` on success. Pagination is limit/offset via query string, surfaced with `x-total-count`, `x-limit` and an RFC 5988 `Link` header carrying `rel=\"next\"`. `date_from` and `date_to` filters are implemented and were verified to change `x-total-count` (5409 unfiltered, 2396 for `date_from=2026-07-27T00:00:00Z`, 6 for `date_to=2026-07-01T00:00:00Z`, 0 for `date_from=2027-01-01T00:00:00Z`). Bad parameter values return HTTP 200 with an OCPI client error envelope (`status_code: 2001`), not a 4xx. Only GET and HEAD are routed; OPTIONS and POST return 404. There is no `/open-ocpi/versions` endpoint (404), so no OCPI version is declared, and the sessions, cdrs, tokens, commands and credentials modules are all 404 under `/open-ocpi` — only the two modules the regulation compels are open.\n\nEnumerations below are constrained to values actually observed across a 250-location sample spanning offsets 0, 1000, 2500, 4000 and 5350; where the observed value diverges from the OCPI 2.2.1 standard (notably EVSE `status` values `WORKING` and `FAULTED`, which are not in the OCPI EVSEStatus enumeration and appear to encode the regulator's \"working\" vocabulary from regulation 10(6)(a)) the observed value is recorded, not corrected.\n\nContact Support:\n Name: char.gy Support\n Email: support@char.gy",
+      "type": "text/plain"
+    }
+  }
+}

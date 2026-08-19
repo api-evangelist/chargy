@@ -1,0 +1,100 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "char.gy Open Charge Point Data API",
+    "version": "2026-07-27"
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Locations",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "List charge point locations",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://char.gy/open-ocpi/locations",
+            "params": [
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query",
+                "description": "Page size. Default 50 (observed via the `x-limit` response header on an unparameterised request). A non-numeric value returns status_code 2001."
+              },
+              {
+                "name": "offset",
+                "value": "",
+                "type": "query",
+                "description": "Zero-based record offset. An offset beyond the collection returns an empty `data` array with status_code 1000."
+              },
+              {
+                "name": "date_from",
+                "value": "",
+                "type": "query",
+                "description": "Return only objects with `last_updated` at or after this timestamp. Verified functional — `date_from=2026-07-27T00:00:00Z` reduced `x-total-count` from 5409 to 2396. An unparseable value returns status_code 2001 \"Date from is not a valid timestamp\"."
+              },
+              {
+                "name": "date_to",
+                "value": "",
+                "type": "query",
+                "description": "Return only objects with `last_updated` before this timestamp. Verified functional — `date_to=2026-07-01T00:00:00Z` returned an `x-total-count` of 6."
+              }
+            ]
+          },
+          "docs": "Returns the paginated list of char.gy charge point locations with their EVSEs and connectors. Observed anonymously with HTTP 200 and an `x-total-count` of 5409 on 2026-07-27. Every EVSE carries an `evse_id` of the form `GB*CGY*E*NNNNN`; every connector carries `tariff_ids` that resolve against `/tariffs`."
+        }
+      ]
+    },
+    {
+      "info": {
+        "name": "Tariffs",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "List charging tariffs",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://char.gy/open-ocpi/tariffs",
+            "params": [
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query",
+                "description": "Page size. Default 50 (observed via the `x-limit` response header on an unparameterised request). A non-numeric value returns status_code 2001."
+              },
+              {
+                "name": "offset",
+                "value": "",
+                "type": "query",
+                "description": "Zero-based record offset. An offset beyond the collection returns an empty `data` array with status_code 1000."
+              },
+              {
+                "name": "date_from",
+                "value": "",
+                "type": "query",
+                "description": "Return only objects with `last_updated` at or after this timestamp. Verified functional — `date_from=2026-07-27T00:00:00Z` reduced `x-total-count` from 5409 to 2396. An unparseable value returns status_code 2001 \"Date from is not a valid timestamp\"."
+              },
+              {
+                "name": "date_to",
+                "value": "",
+                "type": "query",
+                "description": "Return only objects with `last_updated` before this timestamp. Verified functional — `date_to=2026-07-01T00:00:00Z` returned an `x-total-count` of 6."
+              }
+            ]
+          },
+          "docs": "Returns the published tariff objects referenced by connector `tariff_ids` on `/locations`. Observed anonymously with HTTP 200 and an `x-total-count` of 3 on 2026-07-27, including a GBP time-of-day tariff with weekday off-peak, weekday peak and weekend restrictions."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}
