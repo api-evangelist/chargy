@@ -59,7 +59,7 @@ tags:
 - Electrification
 created: '2026-07-27'
 modified: '2026-07-27'
-specificationVersion: '0.19'
+specificationVersion: '0.23'
 apis:
 - aid: chargy:chargy-open-charge-point-data-api
   name: char.gy Open Charge Point Data API
