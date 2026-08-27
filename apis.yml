@@ -61,103 +61,25 @@ created: '2026-07-27'
 modified: '2026-07-27'
 specificationVersion: '0.23'
 apis:
-- aid: chargy:chargy-open-charge-point-data-api
-  name: char.gy Open Charge Point Data API
-  description: >-
-    char.gy's statutory open data feed, published to satisfy Part 4 regulation
-    10 of the UK Public Charge Point Regulations 2023, which requires reference
-    data and availability data to be made available to the public free of
-    charge, in a machine readable format, and without any requirement to agree
-    to terms and conditions. It is shaped as an Open Charge Point Interface
-    (OCPI) surface with exactly two modules exposed, both read-only GET and both
-    completely unauthenticated. GET /open-ocpi/locations returned HTTP 200 and
-    application/json to an anonymous request on 2026-07-27 with the OCPI
-    envelope {data, status_code: 1000, status_message: "Success", timestamp},
-    an x-total-count of 5409 locations, a default x-limit of 50, and an RFC 5988
-    Link header advertising rel="next" — pagination is limit/offset via query
-    string and was confirmed working at limit=2 and across offsets 0 to 550.
-    Each location carries country_code GB, party_id CGY, a UUID id,
-    parking_type (ON_STREET dominates, PARKING_LOT observed), publish, name,
-    address, city, postal_code, country GBR, coordinates, an evses array, an
-    operator block, an owner block naming the local authority, time_zone
-    Europe/London, opening_times and last_updated. Every EVSE carries a uid, an
-    evse_id of the form GB*CGY*E*00022, a status, capabilities
-    (REMOTE_START_STOP_CAPABLE, UNLOCK_CAPABLE), a physical_reference and
-    connectors describing IEC_62196_T2 sockets at AC_1_PHASE 230V/22A with
-    tariff_ids and a terms_and_conditions link. GET /open-ocpi/tariffs returned
-    HTTP 200 with 3 tariff objects carrying currency, elements and
-    price_components of type ENERGY, including a real time-of-day tariff with
-    weekday off-peak, weekday peak and weekend restrictions. No /open-ocpi
-    /versions endpoint is served (404), so no OCPI version is declared, and the
-    sessions, cdrs, tokens, commands and credentials modules are all 404 under
-    /open-ocpi — only the two modules the regulation compels are open.
-  humanURL: https://help.char.gy/support/solutions/articles/77000576948-public-charge-point-regulations-2023
-  baseURL: https://char.gy/open-ocpi
-  tags:
-  - Open Data
-  - EV Charging
-  - OCPI
-  - Locations
-  - Tariffs
-  - Charge Point Operator
-  - United Kingdom
-  properties:
-  - type: Documentation
-    url: https://help.char.gy/support/solutions/articles/77000576948-public-charge-point-regulations-2023
-  - type: OpenAPI
-    url: openapi/chargy-open-charge-point-data-openapi.yml
-  - type: Overlay
-    url: overlays/chargy-open-charge-point-data-overlay.yaml
-  - type: Examples
-    url: examples/chargy-locations-response.json
-  - type: Examples
-    url: examples/chargy-tariffs-response.json
-  - type: Conventions
-    url: conventions/chargy-conventions.yml
-  - type: ErrorCatalog
-    url: errors/chargy-error-codes.yml
-  - type: DataModel
-    url: data-model/chargy-data-model.yml
-  - type: MCPServer
-    url: mcp/chargy-mcp.yml
-  - type: ToolCrosswalk
-    url: mcp/chargy-tool-crosswalk.yml
-  - type: AgentSkill
-    url: skills/_index.yml
-  - type: Specification
-    url: https://github.com/ocpi/ocpi
-  - type: Legal
-    url: https://www.legislation.gov.uk/uksi/2023/1168/regulation/10/made
-  - type: TermsOfService
-    url: https://char.gy/us/terms-of-use
-  - type: Support
-    url: https://help.char.gy/
 - aid: chargy:chargy-ocpi-cpo-api
   name: char.gy OCPI CPO Roaming API
   description: >-
-    char.gy's commercial Open Charge Point Interface implementation in the
-    Charge Point Operator role, used so that another network's drivers can
-    authorise, charge and be settled on char.gy infrastructure. char.gy
-    publishes no documentation for it at all — its existence was established by
-    two independent signals. First, https://char.gy/robots.txt explicitly
-    disallows /ocpi/, /api/, /webhooks/, /account/ and /users/. Second,
-    anonymous probes on 2026-07-27 returned HTTP 401 with the response header
-    `www-authenticate: Token realm="OCPI"` and the body
-    {"error":"HTTP Token: Access denied."} on GET /ocpi/cpo/versions,
-    /ocpi/cpo/2.1.1/locations, /ocpi/cpo/2.2.1/locations, /ocpi/cpo/2.2.1
-    /tariffs, /ocpi/cpo/2.2.1/sessions, /ocpi/cpo/2.2.1/cdrs and
-    /ocpi/cpo/2.2.1/credentials, while control paths /ocpi/, /ocpi/cpo/
-    nonsense-xyz and /ocpi/xyz/versions returned 404 from the same host in the
-    same sweep — so the 401s are real routes, not a blanket wall. Version
-    support is directly observable: /ocpi/cpo/2.2/credentials returned HTTP 200
-    with the OCPI error envelope {"status_code":3002,"status_message":
-    "Unsupported version"}, whereas the 2.2.1 and 2.1.1 paths returned 401,
-    which means char.gy speaks OCPI 2.2.1 and 2.1.1 in the CPO role and
-    explicitly rejects 2.2. No eMSP-role surface was found (/ocpi/emsp/versions
-    → 404). Access is partner-only: an OCPI credentials handshake following a
-    commercial roaming agreement. There is no signup, no sandbox, no published
-    price and no developer registration — the only published contact route
-    anywhere near the API surface is support@char.gy.
+    char.gy's commercial Open Charge Point Interface implementation in the Charge Point Operator role,
+    used so that another network's drivers can authorise, charge and be settled on char.gy infrastructure.
+    char.gy publishes no documentation for it at all — its existence was established by two independent
+    signals. First, https://char.gy/robots.txt explicitly disallows /ocpi/, /api/, /webhooks/, /account/
+    and /users/. Second, anonymous probes on 2026-07-27 returned HTTP 401 with the response header `www-authenticate:
+    Token realm="OCPI"` and the body {"error":"HTTP Token: Access denied."} on GET /ocpi/cpo/versions,
+    /ocpi/cpo/2.1.1/locations, /ocpi/cpo/2.2.1/locations, /ocpi/cpo/2.2.1 /tariffs, /ocpi/cpo/2.2.1/sessions,
+    /ocpi/cpo/2.2.1/cdrs and /ocpi/cpo/2.2.1/credentials, while control paths /ocpi/, /ocpi/cpo/ nonsense-xyz
+    and /ocpi/xyz/versions returned 404 from the same host in the same sweep — so the 401s are real routes,
+    not a blanket wall. Version support is directly observable: /ocpi/cpo/2.2/credentials returned HTTP
+    200 with the OCPI error envelope {"status_code":3002,"status_message": "Unsupported version"}, whereas
+    the 2.2.1 and 2.1.1 paths returned 401, which means char.gy speaks OCPI 2.2.1 and 2.1.1 in the CPO
+    role and explicitly rejects 2.2. No eMSP-role surface was found (/ocpi/emsp/versions → 404). Access
+    is partner-only: an OCPI credentials handshake following a commercial roaming agreement. There is
+    no signup, no sandbox, no published price and no developer registration — the only published contact
+    route anywhere near the API surface is support@char.gy.
   humanURL: https://char.gy/us/partners
   baseURL: https://char.gy/ocpi/cpo
   tags:
@@ -181,7 +103,79 @@ apis:
     url: https://help.char.gy/
   - type: TermsOfService
     url: https://char.gy/us/terms-of-use
+- aid: chargy:chargy-locations-api
+  name: char.gy Locations API
+  description: Reference and availability data for char.gy charge points.
+  humanURL: >-
+    https://help.char.gy/support/solutions/articles/77000576948-public-charge-point-regulations-2023
+  baseURL: https://char.gy/open-ocpi
+  tags:
+  - Locations
+  properties:
+  - type: OpenAPI
+    url: openapi/chargy-locations-api-openapi.yml
+  - type: Documentation
+    url: >-
+      https://help.char.gy/support/solutions/articles/77000576948-public-charge-point-regulations-2023
+  - type: Examples
+    url: examples/chargy-locations-response.json
+  - type: Examples
+    url: examples/chargy-tariffs-response.json
+  - type: Conventions
+    url: conventions/chargy-conventions.yml
+  - type: ErrorCatalog
+    url: errors/chargy-error-codes.yml
+  - type: DataModel
+    url: data-model/chargy-data-model.yml
+  - type: ToolCrosswalk
+    url: mcp/chargy-tool-crosswalk.yml
+  - type: Specification
+    url: https://github.com/ocpi/ocpi
+  - type: Legal
+    url: https://www.legislation.gov.uk/uksi/2023/1168/regulation/10/made
+  - type: TermsOfService
+    url: https://char.gy/us/terms-of-use
+  - type: Support
+    url: https://help.char.gy/
+- aid: chargy:chargy-tariffs-api
+  name: char.gy Tariffs API
+  description: Published price components for char.gy charging sessions.
+  humanURL: >-
+    https://help.char.gy/support/solutions/articles/77000576948-public-charge-point-regulations-2023
+  baseURL: https://char.gy/open-ocpi
+  tags:
+  - Tariffs
+  properties:
+  - type: OpenAPI
+    url: openapi/chargy-tariffs-api-openapi.yml
+  - type: Documentation
+    url: >-
+      https://help.char.gy/support/solutions/articles/77000576948-public-charge-point-regulations-2023
+  - type: Examples
+    url: examples/chargy-locations-response.json
+  - type: Examples
+    url: examples/chargy-tariffs-response.json
+  - type: Conventions
+    url: conventions/chargy-conventions.yml
+  - type: ErrorCatalog
+    url: errors/chargy-error-codes.yml
+  - type: DataModel
+    url: data-model/chargy-data-model.yml
+  - type: ToolCrosswalk
+    url: mcp/chargy-tool-crosswalk.yml
+  - type: Specification
+    url: https://github.com/ocpi/ocpi
+  - type: Legal
+    url: https://www.legislation.gov.uk/uksi/2023/1168/regulation/10/made
+  - type: TermsOfService
+    url: https://char.gy/us/terms-of-use
+  - type: Support
+    url: https://help.char.gy/
 common:
+- type: Overlay
+  url: overlays/chargy-open-charge-point-data-overlay.yaml
+- type: MCPServer
+  url: mcp/chargy-mcp.yml
 - type: AgenticAccess
   url: agentic-access/chargy-agentic-access.yml
 - type: DomainSecurity
