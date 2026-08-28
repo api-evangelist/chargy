@@ -43,6 +43,18 @@ description: >-
   /ocpi/cpo/ closed behind OCPI Token authorization for partner e-mobility
   service providers. There is no developer portal — the entire public
   documentation for the open API is a single Freshdesk help-centre article.
+deliveryModel:
+  model: saas
+  open_source: false
+  commercial: true
+  callable_host: true
+  label: Hosted service · you call their endpoint
+  confidence: high
+  source:
+  - openapi
+  - pricing
+  generated: '2026-08-28'
+  method: derived
 image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/icons/chargy.png
 tags:
 - Energy
