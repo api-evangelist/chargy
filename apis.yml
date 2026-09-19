@@ -135,6 +135,8 @@ apis:
     https://help.char.gy/support/solutions/articles/77000576948-public-charge-point-regulations-2023
   baseURL: https://char.gy/open-ocpi
   tags:
+  - Location
+  tags_raw:
   - Locations
   properties:
   - type: OpenAPI
