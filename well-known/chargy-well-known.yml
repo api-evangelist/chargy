@@ -2,13 +2,39 @@ generated: '2026-07-27'
 method: searched
 source: live probes, 2026-07-27
 host: https://char.gy
-note: >-
-  Every /.well-known/ discovery path probed on the API host returned 404. No
-  security.txt, no OIDC discovery document, no OAuth authorization-server
-  metadata, no RFC 9727 api-catalog and no ai-plugin manifest are published.
-  Recorded as an honest negative result — no WellKnown or SecurityTxt pointer is
-  wired in apis.yml because there is nothing there to point at.
-documents:
+note: Every /.well-known/ discovery path probed on the API host returned 404. No security.txt, no OIDC
+  discovery document, no OAuth authorization-server metadata, no RFC 9727 api-catalog and no ai-plugin
+  manifest are published. Recorded as an honest negative result — no WellKnown or SecurityTxt pointer
+  is wired in apis.yml because there is nothing there to point at.
+other_discovery_probes:
+- path: /openapi.json
+  status: 404
+- path: /openapi.yaml
+  status: 404
+- path: /swagger.json
+  status: 404
+- path: /api-docs
+  status: 404
+- path: /docs
+  status: 404
+- path: /redoc
+  status: 404
+- path: /graphql
+  status: 404
+- path: /llms.txt
+  status: 404
+- path: /open-ocpi/versions
+  status: 404
+  note: OCPI version-negotiation endpoint is not served on the open feed
+- path: /robots.txt
+  status: 200
+  note: Disallows /account/, /webhooks/, /ocpi/, /api/ and /users/; allows /users/sign_in and /users/payg_registrations/new
+- path: /sitemap.xml
+  status: 200
+  note: 5,519 entries, all short-code charge point landing pages
+hosts:
+- host: https://char.gy
+  documents:
   - path: /.well-known/security.txt
     status: 404
   - path: /.well-known/openid-configuration
@@ -19,31 +45,8 @@ documents:
     status: 404
   - path: /.well-known/ai-plugin.json
     status: 404
-other_discovery_probes:
-  - path: /openapi.json
-    status: 404
-  - path: /openapi.yaml
-    status: 404
-  - path: /swagger.json
-    status: 404
-  - path: /api-docs
-    status: 404
-  - path: /docs
-    status: 404
-  - path: /redoc
-    status: 404
-  - path: /graphql
-    status: 404
-  - path: /llms.txt
-    status: 404
-  - path: /open-ocpi/versions
-    status: 404
-    note: OCPI version-negotiation endpoint is not served on the open feed
-  - path: /robots.txt
-    status: 200
-    note: >-
-      Disallows /account/, /webhooks/, /ocpi/, /api/ and /users/; allows
-      /users/sign_in and /users/payg_registrations/new
-  - path: /sitemap.xml
-    status: 200
-    note: 5,519 entries, all short-code charge point landing pages
+x-shape-fix:
+  converted: '2026-08-20'
+  from: documents
+  note: Rewritten into hosts[] -> documents[], the only shape well_known_docs() in score.rb reads. A served
+    .well-known surface recorded in any other shape scores as absent.
