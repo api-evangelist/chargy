@@ -59,22 +59,6 @@ paths:
                   externalValue: ../examples/chargy-tariffs-response.json
 components:
   parameters:
-    limit:
-      name: limit
-      in: query
-      required: false
-      description: Page size. Default 50 (observed via the `x-limit` response header on an unparameterised request). A non-numeric value returns status_code 2001.
-      schema:
-        type: integer
-        default: 50
-    dateTo:
-      name: date_to
-      in: query
-      required: false
-      description: Return only objects with `last_updated` before this timestamp. Verified functional — `date_to=2026-07-01T00:00:00Z` returned an `x-total-count` of 6.
-      schema:
-        type: string
-        format: date-time
     dateFrom:
       name: date_from
       in: query
@@ -91,7 +75,52 @@ components:
       schema:
         type: integer
         default: 0
+    limit:
+      name: limit
+      in: query
+      required: false
+      description: Page size. Default 50 (observed via the `x-limit` response header on an unparameterised request). A non-numeric value returns status_code 2001.
+      schema:
+        type: integer
+        default: 50
+    dateTo:
+      name: date_to
+      in: query
+      required: false
+      description: Return only objects with `last_updated` before this timestamp. Verified functional — `date_to=2026-07-01T00:00:00Z` returned an `x-total-count` of 6.
+      schema:
+        type: string
+        format: date-time
+  headers:
+    Link:
+      description: RFC 5988 pagination link; carries rel="next" when more pages exist.
+      schema:
+        type: string
+      example: <https://char.gy/open-ocpi/locations?limit=2&offset=2>; rel="next"
+    XTotalCount:
+      description: Total number of objects matching the query, before pagination.
+      schema:
+        type: integer
+      example: 5409
+    XLimit:
+      description: Page size applied to this response.
+      schema:
+        type: integer
+      example: 50
+    XRequestId:
+      description: Per-request correlation id emitted on every response.
+      schema:
+        type: string
+      example: 48324f0b-2c70-4f8d-9d97-deb08a76770e
+    ETag:
+      description: Weak validator; responses are sent with cache-control private, must-revalidate.
+      schema:
+        type: string
   schemas:
+    ErrorResponse:
+      allOf:
+      - $ref: '#/components/schemas/OcpiEnvelope'
+      description: 'Client-error envelope returned with HTTP 200 and no `data` member. Observed messages: "Limit is not a number", "Date from is not a valid timestamp".'
     OcpiEnvelope:
       type: object
       description: The OCPI response envelope observed on every 200 response.
@@ -111,6 +140,17 @@ components:
           type: string
           format: date-time
           example: '2026-07-27T21:10:22Z'
+    TariffListResponse:
+      allOf:
+      - $ref: '#/components/schemas/OcpiEnvelope'
+      - type: object
+        required:
+        - data
+        properties:
+          data:
+            type: array
+            items:
+              $ref: '#/components/schemas/Tariff'
     Tariff:
       type: object
       required:
@@ -141,17 +181,6 @@ components:
         last_updated:
           type: string
           format: date-time
-    TariffListResponse:
-      allOf:
-      - $ref: '#/components/schemas/OcpiEnvelope'
-      - type: object
-        required:
-        - data
-        properties:
-          data:
-            type: array
-            items:
-              $ref: '#/components/schemas/Tariff'
     TariffElement:
       type: object
       required:
@@ -163,6 +192,25 @@ components:
             $ref: '#/components/schemas/PriceComponent'
         restrictions:
           $ref: '#/components/schemas/TariffRestrictions'
+    PriceComponent:
+      type: object
+      required:
+      - type
+      - price
+      - step_size
+      properties:
+        type:
+          type: string
+          description: Only ENERGY components were observed — no time or flat fees.
+          enum:
+          - ENERGY
+        price:
+          type: number
+          description: Price per kWh in the tariff currency.
+          example: 0.325
+        step_size:
+          type: integer
+          example: 1
     TariffRestrictions:
       type: object
       properties:
@@ -184,54 +232,6 @@ components:
             - FRIDAY
             - SATURDAY
             - SUNDAY
-    PriceComponent:
-      type: object
-      required:
-      - type
-      - price
-      - step_size
-      properties:
-        type:
-          type: string
-          description: Only ENERGY components were observed — no time or flat fees.
-          enum:
-          - ENERGY
-        price:
-          type: number
-          description: Price per kWh in the tariff currency.
-          example: 0.325
-        step_size:
-          type: integer
-          example: 1
-    ErrorResponse:
-      allOf:
-      - $ref: '#/components/schemas/OcpiEnvelope'
-      description: 'Client-error envelope returned with HTTP 200 and no `data` member. Observed messages: "Limit is not a number", "Date from is not a valid timestamp".'
-  headers:
-    ETag:
-      description: Weak validator; responses are sent with cache-control private, must-revalidate.
-      schema:
-        type: string
-    Link:
-      description: RFC 5988 pagination link; carries rel="next" when more pages exist.
-      schema:
-        type: string
-      example: <https://char.gy/open-ocpi/locations?limit=2&offset=2>; rel="next"
-    XTotalCount:
-      description: Total number of objects matching the query, before pagination.
-      schema:
-        type: integer
-      example: 5409
-    XLimit:
-      description: Page size applied to this response.
-      schema:
-        type: integer
-      example: 50
-    XRequestId:
-      description: Per-request correlation id emitted on every response.
-      schema:
-        type: string
-      example: 48324f0b-2c70-4f8d-9d97-deb08a76770e
 externalDocs:
   description: char.gy help-centre article — Public Charge Point Regulations 2023
   url: https://help.char.gy/support/solutions/articles/77000576948-public-charge-point-regulations-2023
