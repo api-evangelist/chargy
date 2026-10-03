@@ -58,69 +58,64 @@ paths:
                   summary: All three tariffs (observed 2026-07-27)
                   externalValue: ../examples/chargy-tariffs-response.json
 components:
-  parameters:
-    dateFrom:
-      name: date_from
-      in: query
-      required: false
-      description: Return only objects with `last_updated` at or after this timestamp. Verified functional — `date_from=2026-07-27T00:00:00Z` reduced `x-total-count` from 5409 to 2396. An unparseable value returns status_code 2001 "Date from is not a valid timestamp".
-      schema:
-        type: string
-        format: date-time
-    offset:
-      name: offset
-      in: query
-      required: false
-      description: Zero-based record offset. An offset beyond the collection returns an empty `data` array with status_code 1000.
-      schema:
-        type: integer
-        default: 0
-    limit:
-      name: limit
-      in: query
-      required: false
-      description: Page size. Default 50 (observed via the `x-limit` response header on an unparameterised request). A non-numeric value returns status_code 2001.
-      schema:
-        type: integer
-        default: 50
-    dateTo:
-      name: date_to
-      in: query
-      required: false
-      description: Return only objects with `last_updated` before this timestamp. Verified functional — `date_to=2026-07-01T00:00:00Z` returned an `x-total-count` of 6.
-      schema:
-        type: string
-        format: date-time
   headers:
     Link:
       description: RFC 5988 pagination link; carries rel="next" when more pages exist.
       schema:
         type: string
       example: <https://char.gy/open-ocpi/locations?limit=2&offset=2>; rel="next"
+    ETag:
+      description: Weak validator; responses are sent with cache-control private, must-revalidate.
+      schema:
+        type: string
     XTotalCount:
       description: Total number of objects matching the query, before pagination.
       schema:
         type: integer
       example: 5409
-    XLimit:
-      description: Page size applied to this response.
-      schema:
-        type: integer
-      example: 50
     XRequestId:
       description: Per-request correlation id emitted on every response.
       schema:
         type: string
       example: 48324f0b-2c70-4f8d-9d97-deb08a76770e
-    ETag:
-      description: Weak validator; responses are sent with cache-control private, must-revalidate.
+    XLimit:
+      description: Page size applied to this response.
       schema:
-        type: string
+        type: integer
+      example: 50
   schemas:
-    ErrorResponse:
-      allOf:
-      - $ref: '#/components/schemas/OcpiEnvelope'
-      description: 'Client-error envelope returned with HTTP 200 and no `data` member. Observed messages: "Limit is not a number", "Date from is not a valid timestamp".'
+    TariffElement:
+      type: object
+      required:
+      - price_components
+      properties:
+        price_components:
+          type: array
+          items:
+            $ref: '#/components/schemas/PriceComponent'
+        restrictions:
+          $ref: '#/components/schemas/TariffRestrictions'
+    TariffRestrictions:
+      type: object
+      properties:
+        start_time:
+          type: string
+          example: 00:00
+        end_time:
+          type: string
+          example: 07:00
+        day_of_week:
+          type: array
+          items:
+            type: string
+            enum:
+            - MONDAY
+            - TUESDAY
+            - WEDNESDAY
+            - THURSDAY
+            - FRIDAY
+            - SATURDAY
+            - SUNDAY
     OcpiEnvelope:
       type: object
       description: The OCPI response envelope observed on every 200 response.
@@ -140,17 +135,6 @@ components:
           type: string
           format: date-time
           example: '2026-07-27T21:10:22Z'
-    TariffListResponse:
-      allOf:
-      - $ref: '#/components/schemas/OcpiEnvelope'
-      - type: object
-        required:
-        - data
-        properties:
-          data:
-            type: array
-            items:
-              $ref: '#/components/schemas/Tariff'
     Tariff:
       type: object
       required:
@@ -181,17 +165,6 @@ components:
         last_updated:
           type: string
           format: date-time
-    TariffElement:
-      type: object
-      required:
-      - price_components
-      properties:
-        price_components:
-          type: array
-          items:
-            $ref: '#/components/schemas/PriceComponent'
-        restrictions:
-          $ref: '#/components/schemas/TariffRestrictions'
     PriceComponent:
       type: object
       required:
@@ -211,27 +184,54 @@ components:
         step_size:
           type: integer
           example: 1
-    TariffRestrictions:
-      type: object
-      properties:
-        start_time:
-          type: string
-          example: 00:00
-        end_time:
-          type: string
-          example: 07:00
-        day_of_week:
-          type: array
-          items:
-            type: string
-            enum:
-            - MONDAY
-            - TUESDAY
-            - WEDNESDAY
-            - THURSDAY
-            - FRIDAY
-            - SATURDAY
-            - SUNDAY
+    ErrorResponse:
+      allOf:
+      - $ref: '#/components/schemas/OcpiEnvelope'
+      description: 'Client-error envelope returned with HTTP 200 and no `data` member. Observed messages: "Limit is not a number", "Date from is not a valid timestamp".'
+    TariffListResponse:
+      allOf:
+      - $ref: '#/components/schemas/OcpiEnvelope'
+      - type: object
+        required:
+        - data
+        properties:
+          data:
+            type: array
+            items:
+              $ref: '#/components/schemas/Tariff'
+  parameters:
+    dateTo:
+      name: date_to
+      in: query
+      required: false
+      description: Return only objects with `last_updated` before this timestamp. Verified functional — `date_to=2026-07-01T00:00:00Z` returned an `x-total-count` of 6.
+      schema:
+        type: string
+        format: date-time
+    limit:
+      name: limit
+      in: query
+      required: false
+      description: Page size. Default 50 (observed via the `x-limit` response header on an unparameterised request). A non-numeric value returns status_code 2001.
+      schema:
+        type: integer
+        default: 50
+    offset:
+      name: offset
+      in: query
+      required: false
+      description: Zero-based record offset. An offset beyond the collection returns an empty `data` array with status_code 1000.
+      schema:
+        type: integer
+        default: 0
+    dateFrom:
+      name: date_from
+      in: query
+      required: false
+      description: Return only objects with `last_updated` at or after this timestamp. Verified functional — `date_from=2026-07-27T00:00:00Z` reduced `x-total-count` from 5409 to 2396. An unparseable value returns status_code 2001 "Date from is not a valid timestamp".
+      schema:
+        type: string
+        format: date-time
 externalDocs:
   description: char.gy help-centre article — Public Charge Point Regulations 2023
   url: https://help.char.gy/support/solutions/articles/77000576948-public-charge-point-regulations-2023
