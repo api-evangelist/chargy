@@ -64,84 +64,38 @@ paths:
                     status_message: Limit is not a number
                     timestamp: '2026-07-27T21:10:38Z'
 components:
-  headers:
-    Link:
-      description: RFC 5988 pagination link; carries rel="next" when more pages exist.
-      schema:
-        type: string
-      example: <https://char.gy/open-ocpi/locations?limit=2&offset=2>; rel="next"
-    ETag:
-      description: Weak validator; responses are sent with cache-control private, must-revalidate.
-      schema:
-        type: string
-    XTotalCount:
-      description: Total number of objects matching the query, before pagination.
-      schema:
-        type: integer
-      example: 5409
-    XRequestId:
-      description: Per-request correlation id emitted on every response.
-      schema:
-        type: string
-      example: 48324f0b-2c70-4f8d-9d97-deb08a76770e
-    XLimit:
-      description: Page size applied to this response.
-      schema:
-        type: integer
-      example: 50
   schemas:
-    LocationListResponse:
-      allOf:
-      - $ref: '#/components/schemas/OcpiEnvelope'
-      - type: object
-        required:
-        - data
-        properties:
-          data:
-            type: array
-            items:
-              $ref: '#/components/schemas/Location'
-    EVSE:
+    BusinessDetails:
       type: object
       required:
-      - uid
-      - evse_id
-      - status
-      - capabilities
-      - connectors
-      - last_updated
+      - name
       properties:
-        uid:
+        name:
           type: string
-          format: uuid
-        evse_id:
+          example: char.gy
+        website:
           type: string
-          description: eMI3-style EVSE identifier issued under the GB*CGY operator prefix.
-          example: GB*CGY*E*00022
-        status:
+          format: uri
+          example: https://char.gy
+    OcpiEnvelope:
+      type: object
+      description: The OCPI response envelope observed on every 200 response.
+      required:
+      - status_code
+      - status_message
+      - timestamp
+      properties:
+        status_code:
+          type: integer
+          description: OCPI status code. 1000 = Success; 2001 observed for invalid parameters.
+          example: 1000
+        status_message:
           type: string
-          description: Observed values only. Neither WORKING nor FAULTED appears in the OCPI 2.2.1 EVSEStatus enumeration; they align instead with the "working" vocabulary of regulation 10(6)(a) of the Public Charge Point Regulations 2023. Recorded as observed, not corrected.
-          enum:
-          - WORKING
-          - FAULTED
-          example: WORKING
-        capabilities:
-          type: array
-          items:
-            type: string
-            enum:
-            - REMOTE_START_STOP_CAPABLE
-            - UNLOCK_CAPABLE
-        connectors:
-          type: array
-          items:
-            $ref: '#/components/schemas/Connector'
-        physical_reference:
-          type: string
-          example: '00022'
-        last_updated:
+          example: Success
+        timestamp:
           type: string
           format: date-time
+          example: '2026-07-27T21:10:22Z'
     Connector:
       type: object
       required:
@@ -188,25 +142,40 @@ components:
         last_updated:
           type: string
           format: date-time
-    OcpiEnvelope:
+    ErrorResponse:
+      allOf:
+      - $ref: '#/components/schemas/OcpiEnvelope'
+      description: 'Client-error envelope returned with HTTP 200 and no `data` member. Observed messages: "Limit is not a number", "Date from is not a valid timestamp".'
+    Hours:
       type: object
-      description: The OCPI response envelope observed on every 200 response.
-      required:
-      - status_code
-      - status_message
-      - timestamp
       properties:
-        status_code:
-          type: integer
-          description: OCPI status code. 1000 = Success; 2001 observed for invalid parameters.
-          example: 1000
-        status_message:
+        twentyfourseven:
+          type: boolean
+          description: Only twentyfourseven true was observed.
+    LocationListResponse:
+      allOf:
+      - $ref: '#/components/schemas/OcpiEnvelope'
+      - type: object
+        required:
+        - data
+        properties:
+          data:
+            type: array
+            items:
+              $ref: '#/components/schemas/Location'
+    GeoLocation:
+      type: object
+      description: Coordinates are strings, as observed.
+      required:
+      - latitude
+      - longitude
+      properties:
+        latitude:
           type: string
-          example: Success
-        timestamp:
+          example: '51.5784972'
+        longitude:
           type: string
-          format: date-time
-          example: '2026-07-27T21:10:22Z'
+          example: '-0.0641408'
     Location:
       type: object
       description: An OCPI-shaped charge point location. Fields as observed.
@@ -283,47 +252,61 @@ components:
         last_updated:
           type: string
           format: date-time
-    GeoLocation:
-      type: object
-      description: Coordinates are strings, as observed.
-      required:
-      - latitude
-      - longitude
-      properties:
-        latitude:
-          type: string
-          example: '51.5784972'
-        longitude:
-          type: string
-          example: '-0.0641408'
-    Hours:
-      type: object
-      properties:
-        twentyfourseven:
-          type: boolean
-          description: Only twentyfourseven true was observed.
-    ErrorResponse:
-      allOf:
-      - $ref: '#/components/schemas/OcpiEnvelope'
-      description: 'Client-error envelope returned with HTTP 200 and no `data` member. Observed messages: "Limit is not a number", "Date from is not a valid timestamp".'
-    BusinessDetails:
+    EVSE:
       type: object
       required:
-      - name
+      - uid
+      - evse_id
+      - status
+      - capabilities
+      - connectors
+      - last_updated
       properties:
-        name:
+        uid:
           type: string
-          example: char.gy
-        website:
+          format: uuid
+        evse_id:
           type: string
-          format: uri
-          example: https://char.gy
+          description: eMI3-style EVSE identifier issued under the GB*CGY operator prefix.
+          example: GB*CGY*E*00022
+        status:
+          type: string
+          description: Observed values only. Neither WORKING nor FAULTED appears in the OCPI 2.2.1 EVSEStatus enumeration; they align instead with the "working" vocabulary of regulation 10(6)(a) of the Public Charge Point Regulations 2023. Recorded as observed, not corrected.
+          enum:
+          - WORKING
+          - FAULTED
+          example: WORKING
+        capabilities:
+          type: array
+          items:
+            type: string
+            enum:
+            - REMOTE_START_STOP_CAPABLE
+            - UNLOCK_CAPABLE
+        connectors:
+          type: array
+          items:
+            $ref: '#/components/schemas/Connector'
+        physical_reference:
+          type: string
+          example: '00022'
+        last_updated:
+          type: string
+          format: date-time
   parameters:
     dateTo:
       name: date_to
       in: query
       required: false
       description: Return only objects with `last_updated` before this timestamp. Verified functional — `date_to=2026-07-01T00:00:00Z` returned an `x-total-count` of 6.
+      schema:
+        type: string
+        format: date-time
+    dateFrom:
+      name: date_from
+      in: query
+      required: false
+      description: Return only objects with `last_updated` at or after this timestamp. Verified functional — `date_from=2026-07-27T00:00:00Z` reduced `x-total-count` from 5409 to 2396. An unparseable value returns status_code 2001 "Date from is not a valid timestamp".
       schema:
         type: string
         format: date-time
@@ -343,14 +326,31 @@ components:
       schema:
         type: integer
         default: 0
-    dateFrom:
-      name: date_from
-      in: query
-      required: false
-      description: Return only objects with `last_updated` at or after this timestamp. Verified functional — `date_from=2026-07-27T00:00:00Z` reduced `x-total-count` from 5409 to 2396. An unparseable value returns status_code 2001 "Date from is not a valid timestamp".
+  headers:
+    ETag:
+      description: Weak validator; responses are sent with cache-control private, must-revalidate.
       schema:
         type: string
-        format: date-time
+    XRequestId:
+      description: Per-request correlation id emitted on every response.
+      schema:
+        type: string
+      example: 48324f0b-2c70-4f8d-9d97-deb08a76770e
+    XTotalCount:
+      description: Total number of objects matching the query, before pagination.
+      schema:
+        type: integer
+      example: 5409
+    XLimit:
+      description: Page size applied to this response.
+      schema:
+        type: integer
+      example: 50
+    Link:
+      description: RFC 5988 pagination link; carries rel="next" when more pages exist.
+      schema:
+        type: string
+      example: <https://char.gy/open-ocpi/locations?limit=2&offset=2>; rel="next"
 externalDocs:
   description: char.gy help-centre article — Public Charge Point Regulations 2023
   url: https://help.char.gy/support/solutions/articles/77000576948-public-charge-point-regulations-2023
