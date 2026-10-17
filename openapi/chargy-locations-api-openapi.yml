@@ -65,104 +65,6 @@ paths:
                     timestamp: '2026-07-27T21:10:38Z'
 components:
   schemas:
-    BusinessDetails:
-      type: object
-      required:
-      - name
-      properties:
-        name:
-          type: string
-          example: char.gy
-        website:
-          type: string
-          format: uri
-          example: https://char.gy
-    OcpiEnvelope:
-      type: object
-      description: The OCPI response envelope observed on every 200 response.
-      required:
-      - status_code
-      - status_message
-      - timestamp
-      properties:
-        status_code:
-          type: integer
-          description: OCPI status code. 1000 = Success; 2001 observed for invalid parameters.
-          example: 1000
-        status_message:
-          type: string
-          example: Success
-        timestamp:
-          type: string
-          format: date-time
-          example: '2026-07-27T21:10:22Z'
-    Connector:
-      type: object
-      required:
-      - id
-      - standard
-      - format
-      - power_type
-      - max_voltage
-      - max_amperage
-      - last_updated
-      properties:
-        id:
-          type: string
-          example: '1'
-        standard:
-          type: string
-          description: IEC 62196 Type 2 was the only standard observed.
-          enum:
-          - IEC_62196_T2
-        format:
-          type: string
-          enum:
-          - SOCKET
-        power_type:
-          type: string
-          enum:
-          - AC_1_PHASE
-        max_voltage:
-          type: integer
-          example: 230
-        max_amperage:
-          type: integer
-          example: 22
-        tariff_ids:
-          type: array
-          description: Resolves against the id of a Tariff on /tariffs.
-          items:
-            type: string
-            format: uuid
-        terms_and_conditions:
-          type: string
-          format: uri
-          example: https://char.gy/terms-of-use
-        last_updated:
-          type: string
-          format: date-time
-    ErrorResponse:
-      allOf:
-      - $ref: '#/components/schemas/OcpiEnvelope'
-      description: 'Client-error envelope returned with HTTP 200 and no `data` member. Observed messages: "Limit is not a number", "Date from is not a valid timestamp".'
-    Hours:
-      type: object
-      properties:
-        twentyfourseven:
-          type: boolean
-          description: Only twentyfourseven true was observed.
-    LocationListResponse:
-      allOf:
-      - $ref: '#/components/schemas/OcpiEnvelope'
-      - type: object
-        required:
-        - data
-        properties:
-          data:
-            type: array
-            items:
-              $ref: '#/components/schemas/Location'
     GeoLocation:
       type: object
       description: Coordinates are strings, as observed.
@@ -252,6 +154,52 @@ components:
         last_updated:
           type: string
           format: date-time
+    Connector:
+      type: object
+      required:
+      - id
+      - standard
+      - format
+      - power_type
+      - max_voltage
+      - max_amperage
+      - last_updated
+      properties:
+        id:
+          type: string
+          example: '1'
+        standard:
+          type: string
+          description: IEC 62196 Type 2 was the only standard observed.
+          enum:
+          - IEC_62196_T2
+        format:
+          type: string
+          enum:
+          - SOCKET
+        power_type:
+          type: string
+          enum:
+          - AC_1_PHASE
+        max_voltage:
+          type: integer
+          example: 230
+        max_amperage:
+          type: integer
+          example: 22
+        tariff_ids:
+          type: array
+          description: Resolves against the id of a Tariff on /tariffs.
+          items:
+            type: string
+            format: uuid
+        terms_and_conditions:
+          type: string
+          format: uri
+          example: https://char.gy/terms-of-use
+        last_updated:
+          type: string
+          format: date-time
     EVSE:
       type: object
       required:
@@ -293,23 +241,59 @@ components:
         last_updated:
           type: string
           format: date-time
+    LocationListResponse:
+      allOf:
+      - $ref: '#/components/schemas/OcpiEnvelope'
+      - type: object
+        required:
+        - data
+        properties:
+          data:
+            type: array
+            items:
+              $ref: '#/components/schemas/Location'
+    ErrorResponse:
+      allOf:
+      - $ref: '#/components/schemas/OcpiEnvelope'
+      description: 'Client-error envelope returned with HTTP 200 and no `data` member. Observed messages: "Limit is not a number", "Date from is not a valid timestamp".'
+    OcpiEnvelope:
+      type: object
+      description: The OCPI response envelope observed on every 200 response.
+      required:
+      - status_code
+      - status_message
+      - timestamp
+      properties:
+        status_code:
+          type: integer
+          description: OCPI status code. 1000 = Success; 2001 observed for invalid parameters.
+          example: 1000
+        status_message:
+          type: string
+          example: Success
+        timestamp:
+          type: string
+          format: date-time
+          example: '2026-07-27T21:10:22Z'
+    Hours:
+      type: object
+      properties:
+        twentyfourseven:
+          type: boolean
+          description: Only twentyfourseven true was observed.
+    BusinessDetails:
+      type: object
+      required:
+      - name
+      properties:
+        name:
+          type: string
+          example: char.gy
+        website:
+          type: string
+          format: uri
+          example: https://char.gy
   parameters:
-    dateTo:
-      name: date_to
-      in: query
-      required: false
-      description: Return only objects with `last_updated` before this timestamp. Verified functional — `date_to=2026-07-01T00:00:00Z` returned an `x-total-count` of 6.
-      schema:
-        type: string
-        format: date-time
-    dateFrom:
-      name: date_from
-      in: query
-      required: false
-      description: Return only objects with `last_updated` at or after this timestamp. Verified functional — `date_from=2026-07-27T00:00:00Z` reduced `x-total-count` from 5409 to 2396. An unparseable value returns status_code 2001 "Date from is not a valid timestamp".
-      schema:
-        type: string
-        format: date-time
     limit:
       name: limit
       in: query
@@ -318,6 +302,14 @@ components:
       schema:
         type: integer
         default: 50
+    dateTo:
+      name: date_to
+      in: query
+      required: false
+      description: Return only objects with `last_updated` before this timestamp. Verified functional — `date_to=2026-07-01T00:00:00Z` returned an `x-total-count` of 6.
+      schema:
+        type: string
+        format: date-time
     offset:
       name: offset
       in: query
@@ -326,6 +318,14 @@ components:
       schema:
         type: integer
         default: 0
+    dateFrom:
+      name: date_from
+      in: query
+      required: false
+      description: Return only objects with `last_updated` at or after this timestamp. Verified functional — `date_from=2026-07-27T00:00:00Z` reduced `x-total-count` from 5409 to 2396. An unparseable value returns status_code 2001 "Date from is not a valid timestamp".
+      schema:
+        type: string
+        format: date-time
   headers:
     ETag:
       description: Weak validator; responses are sent with cache-control private, must-revalidate.
